@@ -1,0 +1,9 @@
+{
+	"jwt": {
+		"publicKey": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDRry8T/ef/FM51TBe0/Qs16pPAKlA6oncQRZbIdzmGOxH0H7PwDDOEe90k2JLkiO0CifofkV08m4nZ6EIH6slwdRtZKkRP6FfnRZcirtPpAWcpGDuKrKS5XGxIsrzD6vlnm6D2rvxrcnCDt6e8TSx5vFkbG9Emb6DmoFqcn+2MSQIDAQAB",
+		"issuer": "vaeso",
+		"subject": "vaeso Api",
+		"audience": "vaeso",
+		"expiresIn": "30d"
+	}
+}

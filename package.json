@@ -1,0 +1,20 @@
+{
+  "name": "vaeso_backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Karthik Selvaraj",
+  "license": "ISC",
+  "dependencies": {
+    "atob": "^2.1.2",
+    "fastify": "^3.27.2",
+    "fastify-cors": "^6.0.2",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^6.2.2",
+    "nodemon": "^2.0.15",
+    "underscore": "^1.13.2"
+  }
+}
