@@ -1,4 +1,4 @@
-const userService = require('../../services/v1/user.service');
+// const userService = require('../../services/v1/user.service');
 const utils = require('../utils/utils');
 const jwt = require('../../middleware/jwt');
 const apply = async (req, reply) => {
@@ -72,9 +72,25 @@ const updateUser = async (req,reply)=>{
         utils.sendResponseV1(false, msgs.failedMsg, 0, {}, err, reply);
     }
 }
+const addUser = async (req,reply)=>{
+    //check the payload
+    //validate the payload
+    console.log(req.headers)
+    let msg = {
+        invalid: 'invalid payload / missing payload'
+    }
+    let requiredItems = ['name','phone','email'];
+    let isValidPayload = utils.validateFieldLoop(req.body, requiredItems);
+    if(isValidPayload){
+        console.log('valid payload pa pb')
+    }else{
+        console.log('in valid payload pa pb')
+    }
+}
 
 module.exports = {
     apply,
     deleteIncompleteUser,
-    updateUser
+    updateUser,
+    addUser
 }

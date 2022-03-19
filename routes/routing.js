@@ -1,14 +1,13 @@
-//import controllers here
-// const onboardingController = require('./controllers/onboarding.controller.js')
-// const netflixController = require('./controllers/netflix.controller.js')
-//end of import
-let basePath = '/api/v1/'
+
+const onboardingController = require('./controllers/onboarding.controller.js')
+let basePath = '/api/v1/';
+
 const routes = [
     {
         method:'POST',
         url:basePath+'user',
-        handler:()=>{console.log('api working')}
+        handler:onboardingController.addUser
     }
 ]
 
-module.exports = routes
+module.exports = routes;
