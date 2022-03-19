@@ -4,18 +4,16 @@ const MONGODB_URI = process.env.MONGODB_URI
 
 const authData = {
     "useNewUrlParser": true,
-    "useCreateIndex": true,
     "useUnifiedTopology":true
 };
 const dbMongoSaveConn = mongoose.connect(
-    MONGODB_URI,
-    authData,
+    MONGODB_URI,authData,
     (err) => {
+        console.log(err)
         if (!err) { console.log('MongoDB connection succeeded.'); }
         else { console.log('Error in MongoDB connection : ' + JSON.stringify(err, undefined, 2)); }
     }
 );
-
 //Execute query
 function ExecuteSelectQuery(collection, query, sort) {
     return new Promise(function (resolve, reject) {
