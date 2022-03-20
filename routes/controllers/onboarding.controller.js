@@ -1,6 +1,7 @@
 const onboardingService = require('../../services/v1/onboarding.service');
 const utils = require('../utils/utils');
 const jwt = require('../../middleware/jwt');
+const sms = require('../utils/sms')
 const apply = async (req, reply) => {
     let msgs = {
         anonymous: 'anonymous error',
@@ -97,10 +98,38 @@ const addUser = async (req, reply) => {
     }
 
 }
+const sendOtp = async (req, reply) => {
+    let msg = {
+        success: 'successful',
+        invalid: 'invalid payload / missing payload',
+        failure: 'failure'
+    }
+    try {
+        //check payload => check phone, check otp
+        let requiredItems = ['phone'];
+        let isValidPayload = utils.validateFieldLoop(req.body, requiredItems);
+        if (isValidPayload) {
+            let { phone } = req.body;
+            let otp = utils.generateOTP(6);
+            //send otp with external service (now vonage)
+            let sms_message = `Your otp to register your profile in Cashinfy is ${otp}. Do not disclose your OTP to others.          `
+            await sms.sendSMS(phone,sms_message)
+            //record them in the db
+            await onboardingService.recordPhoneOtp(phone,otp)
+            utils.sendResponseV1(true, msg.success, 0, { phone }, "", reply);
+        } else {
+            utils.sendResponseV1(false, msg.invalid, 0, 'failed in validation', '', reply)
+        }
+
+    } catch (err) {
+        utils.sendResponseV1(false, msg.failure, 0, 'failed', err, reply)
+    }
+}
 
 module.exports = {
     apply,
     deleteIncompleteUser,
     updateUser,
-    addUser
+    addUser,
+    sendOtp
 }

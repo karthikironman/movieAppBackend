@@ -2,24 +2,40 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 let userSchema = Schema({
-    'name':{
-        type:String,
-        trim:true
+    'name': {
+        type: String,
+        trim: true
     },
-    "phone":{
-        type:Number
+    "phone": {
+        type: Number,
+        trim: true
     },
-    "verified":{
-        type:Boolean,
-        default:false
+    "otp": {
+        type: Number,
+        trim: true
     },
-    "created":{
-        type:Date,
-        default:Date.now
+    "created": {
+        type: Date,
+        default: Date.now
     }
 })
-const users = mongoose.model('users',userSchema);
+let otpSchema = Schema({
+    'phone': {
+        type: Number
+    },
+    'otp': {
+        type: Number,
+        trim: true
+    },
+    "created": {
+        type: Date,
+        default: Date.now
+    }
+})
+const users = mongoose.model('users', userSchema);
+const otps = mongoose.model('otps',otpSchema)
 exports.users = users;
+exports.otps = otps;
 
 
 

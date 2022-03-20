@@ -9,6 +9,7 @@
   "author": "Karthik Selvaraj",
   "license": "ISC",
   "dependencies": {
+    "@vonage/server-sdk": "^2.10.11",
     "atob": "^2.1.2",
     "dotenv": "^16.0.0",
     "fastify": "^3.27.2",

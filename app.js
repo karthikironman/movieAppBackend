@@ -1,12 +1,16 @@
 const fastify = require('fastify')();
 require('dotenv').config();
-const { jwtCheck } = require( './middleware/jwtCheck');
+const { jwtCheck } = require('./middleware/jwtCheck');
 const routes = require('./routes/routing');
 routes.forEach((route, index) => {
-  fastify.route(route)
+  try {
+    fastify.route(route)
+  } catch (err) {
+    console.log('[route registration failure]', err, index)
+  }
 })
 fastify.addHook('preHandler', (req, res, next) => {
-  jwtCheck(req,res,next);
+  jwtCheck(req, res, next);
 });
 fastify.register(require("fastify-cors"), {
   origin: '*',
@@ -15,7 +19,7 @@ fastify.register(require("fastify-cors"), {
 // Run the server!
 fastify.listen(4000, function (err, address) {
   if (err) {
-    console.log('somme error pa in server',err)
+    console.log('somme error pa in server', err)
     fastify.log.error(err)
     process.exit(1)
   }

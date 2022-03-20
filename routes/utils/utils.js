@@ -37,3 +37,17 @@ exports.validateFieldLoop = (body, itemArray) => {
           return false
       }
   }
+
+  exports.generateOTP = (no_of_digits) => {
+      let digitSet = '0123456789';
+      let OTP = '';
+      for(let i=0;i<no_of_digits;i++){
+          if(i === 0){ //first digit should not be zero, sms will neglect the zero
+            OTP += digitSet[(Math.floor(Math.random() * 9))+1];
+          }else{
+            OTP += digitSet[Math.floor(Math.random() * 10)];
+          }
+         
+      }
+      return OTP;
+  }

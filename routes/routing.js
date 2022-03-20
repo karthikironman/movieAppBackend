@@ -7,6 +7,11 @@ const routes = [
         method:'POST',
         url:basePath+'user',
         handler:onboardingController.addUser
+    },
+    {
+        method:'POST',
+        url:basePath+'otp',
+        handler:onboardingController.sendOtp
     }
 ]
 

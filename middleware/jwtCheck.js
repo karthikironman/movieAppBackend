@@ -1,7 +1,8 @@
 const jwt = require('./jwt');
 const utils = require('../routes/utils/utils');
 let whitelists = [
-'/api/v1/user'
+'/api/v1/user',
+'/api/v1/otp'
 ]
 
 exports.jwtCheck = function (req, reply, next) {
