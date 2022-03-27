@@ -3,7 +3,8 @@ let userService = require('../../services/v1/user.service');
 let otpPhoneService = require('../../services/v1/otpPhone.service')
 const utils = require('../utils/utils');
 const jwt = require('../../middleware/jwt');
-const sms = require('../utils/sms')
+const sms = require('../utils/sms');
+const { users } = require('../../database/models/schema');
 const addUser = async (req, reply) => {
     let msg = {
         success: 'successful',
@@ -22,13 +23,13 @@ const addUser = async (req, reply) => {
             let validOtp = await verifyOtp(req, {}, false);
             if (validOtp) {
                 let existingPhoneCount = await userService.checkPhone(phone);
-                if(existingPhoneCount.length === 0){
+                if (existingPhoneCount.length === 0) {
                     let result = await userService.addUser(name, phone, password);
                     utils.sendResponseV1(true, msg.success, 0, result, "", reply)
-                }else{
-                    utils.sendResponseV1(false, msg.alreadyPresent, 0, "number already existing, please loin", "", reply)
+                } else {
+                    utils.sendResponseV1(false, msg.alreadyPresent, 0, "number already existing, please login", "", reply)
                 }
-               
+
             } else {
                 utils.sendResponseV1(false, msg.invalid, 0, 'failed in validation (OTP VALIDATION or Number not verified)', '', reply)
             }
@@ -125,10 +126,38 @@ const verifyOtp = async (req, reply, http_response = true) => {
         utils.sendResponseV1(false, msg.failure, 0, 'failed', err, reply)
     }
 }
+const login = async (req, reply) => {
+    // let msg = {
+    //     success: 'otp verified process completed',
+    //     wrong: 'wrong otp, please retry',
+    //     numberNotRegistered: 'Phone Number doesnt exists, you must register first',
+    //     invalid: 'invalid / Missing Parameters'
+    // }
+    let requiredItems = ['phone', 'password'];
+    let isValidPayload = utils.validateFieldLoop(req.body, requiredItems);
+    if (isValidPayload) {
+        let { phone, password } = req.body;
+        let phoneExists = await userService.checkPhone(phone);
+        if (phoneExists.length == 0) {
+            utils.sendResponseV1(true, 'Phone number not registered', 0, { registered: false, data: {} }, '', reply);
+        } else {
+            let loginInformation = await userService.getByPhoneNPassword(phone, password);
+            console.log(loginInformation,loginInformation.length)
+            if (loginInformation.length > 0) {
+                utils.sendResponseV1(true, 'Login Processed ', 0, { registered: true, data: loginInformation, password: true }, '', reply);
+            } else {
+                utils.sendResponseV1(true, 'Login Processed ', 0, { registered: true, data: loginInformation, password: false }, '', reply);
+            }
+        }
+    } else {
+        utils.sendResponseV1(false, 'Some Error occured', 0, {}, '', reply);
+    }
+}
 module.exports = {
     addUser,
     sendOtp,
-    verifyOtp
+    verifyOtp,
+    login
 }
 
 

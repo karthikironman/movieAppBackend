@@ -3,6 +3,11 @@ const onboardingController = require('./controllers/onboarding.controller.js');
 
 const routes = [
     {
+        method:'GET',
+        url:'/health',
+        handler:(res,reply)=>{reply.send('working pa')}
+    },
+    {
         method:'POST',
         url:basePath+'send_otp',
         handler:onboardingController.sendOtp
@@ -16,6 +21,11 @@ const routes = [
         method:'POST',
         url:basePath+'user',
         handler:onboardingController.addUser
+    },
+    {
+        method:'POST',
+        url:basePath+'login',
+        handler:onboardingController.login
     }
 ]
 

@@ -20,7 +20,17 @@ const checkPhone = (phone) => {
     }
     return new Promise(mainFunction)
 }
+const getByPhoneNPassword = (phone,password) => {
+    const mainFunction = (resolve, reject) => {
+        let params = { phone,password };
+        connections.ExecuteSelectQuery(model.users, params).then(data => {
+            resolve(data)
+        }).catch((err) => { reject(err) })
+    }
+    return new Promise(mainFunction)
+}
 module.exports = {
     addUser,
-    checkPhone
+    checkPhone,
+    getByPhoneNPassword
 }

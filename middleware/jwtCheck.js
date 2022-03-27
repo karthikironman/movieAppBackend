@@ -4,7 +4,8 @@ let whitelists = [
 '/api/v1/user',
 '/api/v1/send_otp',
 '/api/v1/verify_otp',
-
+'/api/v1/login',
+'/health'
 ]
 
 exports.jwtCheck = function (req, reply, next) {
