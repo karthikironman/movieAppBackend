@@ -10,8 +10,8 @@ let userSchema = Schema({
         type: Number,
         trim: true
     },
-    "otp": {
-        type: Number,
+    "password": {
+        type: String,
         trim: true
     },
     "created": {
@@ -33,7 +33,7 @@ let otpSchema = Schema({
     }
 })
 const users = mongoose.model('users', userSchema);
-const otps = mongoose.model('otps',otpSchema)
+const otps = mongoose.model('otps', otpSchema)
 exports.users = users;
 exports.otps = otps;
 

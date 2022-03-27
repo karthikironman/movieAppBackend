@@ -8,6 +8,7 @@ const vonage = new Vonage({
 const from = "Vonage APIs"
 exports.sendSMS = async (to, text) => {
     // console.log('sending sms ',to, text)
+    let to = "91"+to; //obviously work only for Indian numbers
     await vonage.message.sendSms(from, to, text, (err, responseData) => {
         if (err) {
             console.log(err);

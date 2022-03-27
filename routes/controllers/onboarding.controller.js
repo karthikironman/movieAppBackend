@@ -8,18 +8,30 @@ const addUser = async (req, reply) => {
     let msg = {
         success: 'successful',
         invalid: 'invalid payload / missing payload',
-        failure: 'failure'
+        failure: 'failure',
+        alreadyPresent: ' Phone number already present, please consider login'
     }
     try {
         //check the payload
         //validate the payload
-        let requiredItems = ['name', 'phone'];
+        let requiredItems = ['name', 'phone', 'otp', 'password'];
         let isValidPayload = utils.validateFieldLoop(req.body, requiredItems);
+        //can also add password validation here.... but let me skip it for now
         if (isValidPayload) {
-            let { name, phone } = req.body;
-            console.log('valid payload pa pb');
-            let result = await userService.addUser(name, phone);
-            utils.sendResponseV1(true, msg.success, 0, result, "", reply)
+            let { name, phone, password } = req.body;
+            let validOtp = await verifyOtp(req, {}, false);
+            if (validOtp) {
+                let existingPhoneCount = await userService.checkPhone(phone);
+                if(existingPhoneCount.length === 0){
+                    let result = await userService.addUser(name, phone, password);
+                    utils.sendResponseV1(true, msg.success, 0, result, "", reply)
+                }else{
+                    utils.sendResponseV1(false, msg.alreadyPresent, 0, "number already existing, please loin", "", reply)
+                }
+               
+            } else {
+                utils.sendResponseV1(false, msg.invalid, 0, 'failed in validation (OTP VALIDATION or Number not verified)', '', reply)
+            }
         } else {
             console.log('in valid payload pa pb');
             utils.sendResponseV1(false, msg.invalid, 0, 'failed in validation', '', reply)
@@ -47,7 +59,7 @@ const sendOtp = async (req, reply) => {
             await sms.sendSMS(phone, sms_message)
             //record them in the db
             await otpPhoneService.recordPhoneOtp(phone, otp)
-            utils.sendResponseV1(true, msg.success, 0, { phone }, "", reply);
+            utils.sendResponseV1(true, msg.success, 0, { phone, otp }, "I know its wierd to send otp's in the network call, but vonage is not consistent in trial version", reply);
         } else {
             utils.sendResponseV1(false, msg.invalid, 0, 'failed in validation', '', reply)
         }
@@ -56,8 +68,7 @@ const sendOtp = async (req, reply) => {
         utils.sendResponseV1(false, msg.failure, 0, 'failed', err, reply)
     }
 }
-const verifyOtp = async (req, reply) => {
-    console.log(0)
+const verifyOtp = async (req, reply, http_response = true) => {
     let msg = {
         success: 'otp verified process completed',
         wrong: 'wrong otp, please retry',
@@ -68,37 +79,46 @@ const verifyOtp = async (req, reply) => {
         let requiredItems = ['phone', 'otp'];
         let isValidPayload = utils.validateFieldLoop(req.body, requiredItems);
         if (isValidPayload) {
-              //fetch otp and mobile record
-              //if record found -> send success, else false
-              let resultPayload = {
-                  otpVerified:null,
-                  timeBetweenTriggers:null //not implementing time window verification for now
-                  //all the otps are valid for invalid time
-              }
-              let otpMessage = '';
-              let {phone,otp} = req.body;
-              let result = await otpPhoneService.getPhoneOtpRecordByPhoneNOtp(phone,otp);
-              if(result.length){
-                  let timeNotExpired = true;
-                  let timeBetweenTriggers = '30s'
-                  if(timeNotExpired){
-                      resultPayload.otpVerified = true;
-                      resultPayload.timeBetweenTriggers = timeBetweenTriggers;
-                      otpMessage = 'OTP SUCCESSFULLY VERIFIED'
-                  }else{
-                      resultPayload.otpVerified = false;
-                      resultPayload.timeBetweenTriggers = timeBetweenTriggers;
-                      otpMessage = 'OTP EXPIRED, PLEASE RETRY'
-                  }
-              }else{
-                  //otp record not found
+            //fetch otp and mobile record
+            //if record found -> send success, else false
+            let resultPayload = {
+                otpVerified: null,
+                timeBetweenTriggers: null //not implementing time window verification for now
+                //all the otps are valid for invalid time
+            }
+            let otpMessage = '';
+            let { phone, otp } = req.body;
+            let result = await otpPhoneService.getPhoneOtpRecordByPhoneNOtp(phone, otp);
+            if (result.length) {
+                let timeNotExpired = true;
+                let timeBetweenTriggers = '30s'
+                if (timeNotExpired) {
+                    resultPayload.otpVerified = true;
+                    resultPayload.timeBetweenTriggers = timeBetweenTriggers;
+                    otpMessage = 'OTP SUCCESSFULLY VERIFIED, Phone number can be registered now'
+                } else {
+                    resultPayload.otpVerified = false;
+                    resultPayload.timeBetweenTriggers = timeBetweenTriggers;
+                    otpMessage = 'OTP EXPIRED, PLEASE RETRY'
+                }
+            } else {
+                //otp record not found
                 resultPayload.otpVerified = false;
                 resultPayload.timeBetweenTriggers = null;
-                otpMessage = 'WRONG OTP / Phone Number not found in the record'
-              }
-              utils.sendResponseV1(true,msg.success,0,resultPayload,otpMessage,reply);
+                otpMessage = 'WRONG OTP or the Phone Number is not found in the record'
+            }
+            if (http_response) {
+                utils.sendResponseV1(true, msg.success, 0, resultPayload, otpMessage, reply);
+            } else {
+                return resultPayload.otpVerified;
+            }
         } else {
-            utils.sendResponseV1(false, msg.invalid, 0, 'failed in validation', '', reply)
+            if (http_response) {
+                utils.sendResponseV1(false, msg.invalid, 0, 'failed in validation', '', reply)
+            } else {
+                return 'msg.invalid'
+            }
+
         }
 
     } catch (err) {
