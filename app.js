@@ -17,7 +17,7 @@ fastify.register(require("fastify-cors"), {
   methods: ["POST", 'GET', 'PUT', 'DELETE']
 });
 // Run the server!
-fastify.listen(4000, function (err, address) {
+fastify.listen(4000,"0.0.0.0", function (err, address) {
   console.log({err,address})
   if (err) {
     console.log('somme error pa in server', err)
