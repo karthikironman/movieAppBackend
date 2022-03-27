@@ -18,10 +18,11 @@ fastify.register(require("fastify-cors"), {
 });
 // Run the server!
 fastify.listen(4000, function (err, address) {
+  console.log({err,address})
   if (err) {
     console.log('somme error pa in server', err)
     fastify.log.error(err)
     process.exit(1)
   }
-  fastify.log.info(`server listening on ${address}`)
+  console.log(`server listening on ${address}`)
 })
