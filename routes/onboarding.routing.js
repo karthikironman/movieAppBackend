@@ -5,22 +5,17 @@ const routes = [
     {
         method:'GET',
         url:'/health',
-        handler:(res,reply)=>{reply.send('working pa')}
-    },
-    {
-        method:'POST',
-        url:basePath+'send_otp',
-        handler:onboardingController.sendOtp
-    },
-    {
-        method:'POST',
-        url:basePath+'verify_otp',
-        handler:onboardingController.verifyOtp
+        handler:(res,reply)=>{reply.send('working pa - the movie app routes')}
     },
     {
         method:'POST',
         url:basePath+'user',
         handler:onboardingController.addUser
+    },
+    {
+        method:'GET',
+        url:basePath+'user',
+        handler:onboardingController.getUsers
     },
     {
         method:'POST',

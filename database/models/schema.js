@@ -6,100 +6,38 @@ let userSchema = Schema({
         type: String,
         trim: true
     },
-    "phone": {
-        type: Number,
+    "email": {
+        type: String,
         trim: true
     },
     "password": {
         type: String,
         trim: true
     },
+    "role": {
+        type: String,
+        enum: ['admin', 'operator']
+    },
     "created": {
         type: Date,
         default: Date.now
     }
 })
-let otpSchema = Schema({
-    'phone': {
-        type: Number
-    },
-    'otp': {
-        type: Number,
+let movieSchema = Schema({
+    'title': {
+        type: String,
         trim: true
     },
-    "created": {
-        type: Date,
-        default: Date.now
+    'language': {
+        type: String,
+        enum: ['tamil', 'kannada', 'english', 'hindi', 'telugu', 'malayalam']
+    },
+    'age_restricted': {
+        type: String,
+        enum: ['true', 'false']
     }
 })
+const movies = mongoose.model('movies', movieSchema)
 const users = mongoose.model('users', userSchema);
-const otps = mongoose.model('otps', otpSchema)
 exports.users = users;
-exports.otps = otps;
-
-
-
-// var userSchema = Schema({
-//     'sex':{
-//         type:String,
-//         enum: ['male','female','others']
-//     },
-//     "name": { type: String, trim: true },
-//     "caste": { type: String, trim: true },
-//     "height": {  //units in feet
-//         type: Number,
-//         trim: true,
-//         max: 10,
-//         min: 1
-//     },
-//     "weight": {  //units in feet
-//         type: Number,
-//         trim: true,
-//         max: 300,
-//         min: 1
-//     },
-//     "skin_tone": {
-//         type: String,
-//         enum: ['black', 'brown', 'yellow', 'red', 'white']
-//     },
-//     "occupation": {
-//         type: String,
-//         trim: true
-//     },
-//     "self_description": {
-//         type: String,
-//         trim: true
-//     },
-//     "partner_expectation": {
-//         type: String,
-//         trim: true
-//     },
-//     "salary": {
-//         type: Number,
-//         trim: true,
-//         max: 10000000,
-//         min: 0
-//     }, //in Rupees - Assuming max per month Salary of an Indian could be one Crore ;)
-//     "siblings": {  //no of siblings
-//         type: Number,
-//         trim: true,
-//         max: 10,
-//         min: 0
-//     },
-//     "interests": {
-//         type: String,
-//         trim: true
-//     },
-//     "location": {
-//         type: String,
-//         trim: true
-//     },
-//     "modified": {
-//         type: Date,
-//         default: Date.now
-//     },
-//     "created": {
-//         type: Date,
-//         default: Date.now
-//     },
-// })
+exports.movies = movies;

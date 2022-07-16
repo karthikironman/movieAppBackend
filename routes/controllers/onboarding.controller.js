@@ -15,148 +15,75 @@ const addUser = async (req, reply) => {
     try {
         //check the payload
         //validate the payload
-        let requiredItems = ['name', 'phone', 'otp', 'password'];
+        let requiredItems = ['name', 'email', 'role', 'password'];
         let isValidPayload = utils.validateFieldLoop(req.body, requiredItems);
         //can also add password validation here.... but let me skip it for now
         if (isValidPayload) {
-            let { name, phone, password } = req.body;
-            let validOtp = await verifyOtp(req, {}, false);
-            if (validOtp) {
-                let existingPhoneCount = await userService.checkPhone(phone);
-                if (existingPhoneCount.length === 0) {
-                    let result = await userService.addUser(name, phone, password);
+            let { name, email, role, password } = req.body;
+            let expectedRole = ['admin', 'operator'];
+            let validRole = expectedRole.includes(role);
+            let validEmail = utils.emailValidation(email);
+            if (validRole && validEmail) {
+                let existingEmailCount = await userService.checkEmail(email);
+                if (existingEmailCount.length === 0) {
+                    let result = await userService.addUser(name, email, password, role);
                     utils.sendResponseV1(true, msg.success, 0, result, "", reply)
                 } else {
-                    utils.sendResponseV1(false, msg.alreadyPresent, 0, "number already existing, please login", "", reply)
+                    utils.sendResponseV1(false, msg.alreadyPresent, 0, "email already existing, please login", "", reply)
                 }
 
             } else {
-                utils.sendResponseV1(false, msg.invalid, 0, 'failed in validation (OTP VALIDATION or Number not verified)', '', reply)
-            }
-        } else {
-            console.log('in valid payload pa pb');
-            utils.sendResponseV1(false, msg.invalid, 0, 'failed in validation', '', reply)
-        }
-    } catch (err) {
-        utils.sendResponseV1(false, msg.failure, 0, 'failed', err, reply)
-    }
-
-}
-const sendOtp = async (req, reply) => {
-    let msg = {
-        success: 'successful',
-        invalid: 'invalid payload / missing payload',
-        failure: 'failure'
-    }
-    try {
-        //check payload => check phone, check otp
-        let requiredItems = ['phone'];
-        let isValidPayload = utils.validateFieldLoop(req.body, requiredItems);
-        if (isValidPayload) {
-            let { phone } = req.body;
-            let otp = utils.generateOTP(6);
-            //send otp with external service (now vonage)
-            let sms_message = `Your otp to register your profile in Cashinfy is ${otp}. Do not disclose your OTP to others.          `
-            await sms.sendSMS(phone, sms_message)
-            //record them in the db
-            await otpPhoneService.recordPhoneOtp(phone, otp)
-            utils.sendResponseV1(true, msg.success, 0, { phone, otp }, "I know its wierd to send otp's in the network call, but vonage is not consistent in trial version", reply);
-        } else {
-            utils.sendResponseV1(false, msg.invalid, 0, 'failed in validation', '', reply)
-        }
-
-    } catch (err) {
-        utils.sendResponseV1(false, msg.failure, 0, 'failed', err, reply)
-    }
-}
-const verifyOtp = async (req, reply, http_response = true) => {
-    let msg = {
-        success: 'otp verified process completed',
-        wrong: 'wrong otp, please retry',
-        failure: 'failed',
-        invalid: 'invalid / Missing Parameters'
-    }
-    try {
-        let requiredItems = ['phone', 'otp'];
-        let isValidPayload = utils.validateFieldLoop(req.body, requiredItems);
-        if (isValidPayload) {
-            //fetch otp and mobile record
-            //if record found -> send success, else false
-            let resultPayload = {
-                otpVerified: null,
-                timeBetweenTriggers: null //not implementing time window verification for now
-                //all the otps are valid for invalid time
-            }
-            let otpMessage = '';
-            let { phone, otp } = req.body;
-            let result = await otpPhoneService.getPhoneOtpRecordByPhoneNOtp(phone, otp);
-            if (result.length) {
-                let timeNotExpired = true;
-                let timeBetweenTriggers = '30s'
-                if (timeNotExpired) {
-                    resultPayload.otpVerified = true;
-                    resultPayload.timeBetweenTriggers = timeBetweenTriggers;
-                    otpMessage = 'OTP SUCCESSFULLY VERIFIED, Phone number can be registered now'
-                } else {
-                    resultPayload.otpVerified = false;
-                    resultPayload.timeBetweenTriggers = timeBetweenTriggers;
-                    otpMessage = 'OTP EXPIRED, PLEASE RETRY'
-                }
-            } else {
-                //otp record not found
-                resultPayload.otpVerified = false;
-                resultPayload.timeBetweenTriggers = null;
-                otpMessage = 'WRONG OTP or the Phone Number is not found in the record'
-            }
-            if (http_response) {
-                utils.sendResponseV1(true, msg.success, 0, resultPayload, otpMessage, reply);
-            } else {
-                return resultPayload.otpVerified;
-            }
-        } else {
-            if (http_response) {
                 utils.sendResponseV1(false, msg.invalid, 0, 'failed in validation', '', reply)
-            } else {
-                return 'msg.invalid'
             }
-
+        } else {
+            utils.sendResponseV1(false, msg.invalid, 0, 'failed in validation', '', reply)
         }
-
     } catch (err) {
         utils.sendResponseV1(false, msg.failure, 0, 'failed', err, reply)
+    }
+
+}
+const getUsers = async (req,reply) => {
+    let msgs = {
+       success:'success',
+       failure:'failure'
+    }
+    try{
+        let data = await userService.getUser();
+        utils.sendResponseV1(false, msgs.success, 0, data, '', reply)
+    }catch(err){
+        utils.sendResponseV1(false, msgs.failure, 0, {}, '', reply)
     }
 }
 const login = async (req, reply) => {
-    // let msg = {
-    //     success: 'otp verified process completed',
-    //     wrong: 'wrong otp, please retry',
-    //     numberNotRegistered: 'Phone Number doesnt exists, you must register first',
-    //     invalid: 'invalid / Missing Parameters'
-    // }
-    let requiredItems = ['phone', 'password'];
+    let msg = {
+        success: 'login processes',
+        wrongPassword: 'wrong password',
+        emailNotRegistered: 'Phone Number doesnt exists, you must register first',
+        invalid: 'invalid / Missing Parameters'
+    }
+    let requiredItems = ['email', 'password'];
     let isValidPayload = utils.validateFieldLoop(req.body, requiredItems);
     if (isValidPayload) {
-        let { phone, password } = req.body;
-        let phoneExists = await userService.checkPhone(phone);
-        if (phoneExists.length == 0) {
-            utils.sendResponseV1(true, 'Phone number not registered', 0, { registered: false, data: {} }, '', reply);
+        let { email, password } = req.body;
+        let emailExists = await userService.checkEmail(email);
+        if (emailExists.length == 0) {
+            utils.sendResponseV1(true, msg.emailNotRegistered, 0, { registered: false, data: {} }, '', reply);
         } else {
-            let loginInformation = await userService.getByPhoneNPassword(phone, password);
-            console.log(loginInformation,loginInformation.length)
+            let loginInformation = await userService.getByEmailNPassword(email, password);
             if (loginInformation.length > 0) {
-                utils.sendResponseV1(true, 'Login Processed ', 0, { registered: true, data: loginInformation, password: true }, '', reply);
+                utils.sendResponseV1(true, msg.success, 0, { registered: true, data: loginInformation, password: true }, '', reply);
             } else {
-                utils.sendResponseV1(true, 'Login Processed ', 0, { registered: true, data: loginInformation, password: false }, '', reply);
+                utils.sendResponseV1(true, msg.wrongPassword, 0, { registered: true, data: loginInformation, password: false }, '', reply);
             }
         }
     } else {
-        utils.sendResponseV1(false, 'Some Error occured', 0, {}, '', reply);
+        utils.sendResponseV1(false, msg.invalid, 0, {}, '', reply);
     }
 }
 module.exports = {
     addUser,
-    sendOtp,
-    verifyOtp,
+    getUsers,
     login
 }
 

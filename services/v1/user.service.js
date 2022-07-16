@@ -1,28 +1,35 @@
 
 const connections = require("../../database/mongo.connection.js");
 const model = require("../../database/models/schema");
-const { ObjectId } = require("mongodb");
-const addUser = (name, phone, password) => {
+const addUser = (name, email, password,role) => {
     const mainFunction = (resolve, reject) => {
-        let params = { name, phone, password };
+        let params = { name, email, password,role };
         connections.ExecuteInsertQuery(model.users, params).then(data => {
             resolve(data)
         }).catch((err) => { reject(err) })
     }
     return new Promise(mainFunction)
 }
-const checkPhone = (phone) => {
-    const mainFunction = (resolve, reject) => {
-        let params = { phone };
-        connections.ExecuteSelectQuery(model.users, params).then(data => {
+const getUser = () => {
+    const mainFunction = (resolve,reject) => {
+        connections.ExecuteSelectQuery(model.users,{}).then(data => {
             resolve(data)
         }).catch((err) => { reject(err) })
     }
     return new Promise(mainFunction)
 }
-const getByPhoneNPassword = (phone,password) => {
+const checkEmail = (email) => {
     const mainFunction = (resolve, reject) => {
-        let params = { phone,password };
+        let params = { email };
+        connections.ExecuteSelectQuery(model.users, params).then(data => {
+            resolve(data)
+        }).catch((err) => { reject(err) });
+    }
+    return new Promise(mainFunction)
+}
+const getByEmailNPassword = (email,password) => {
+    const mainFunction = (resolve, reject) => {
+        let params = { email,password };
         connections.ExecuteSelectQuery(model.users, params).then(data => {
             resolve(data)
         }).catch((err) => { reject(err) })
@@ -31,6 +38,7 @@ const getByPhoneNPassword = (phone,password) => {
 }
 module.exports = {
     addUser,
-    checkPhone,
-    getByPhoneNPassword
+    checkEmail,
+    getByEmailNPassword,
+    getUser
 }
